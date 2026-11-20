@@ -3,44 +3,25 @@
 
 // ---------- Libraries ----------
 #include <Arduino.h>
-// From Lab 9
-#include <SPI.h>
-#include <MFRC522.h>
+#include <Wire.h>
 // From Lab 6
-#include <Wire.h> 
-#include <Adafruit_Sensor.h>
-#include <Adafruit_BMP280.h> 
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-// From Lab 7
-#include <WiFi.h>
-#include <WebServer.h>
+
+
 
 
 // ---------- Global Variables ----------
-// add pins
-
+// add pins (From Lab6)
+ #define SCREEN_WIDTH 128 
+ #define SCREEN_HEIGHT 64 
+ #define OLED_MOSI 11 
+ #define OLED_CLK 13 
+ #define OLED_DC 9 
+ #define OLED_CS 10 
+ #define OLED_RST 8 
 // ---------- Objects ----------
-MFRC522 rfid(RFID_SS, RFID_RST);
-
-String authorizedUIDs[] = {"D0 68 C8 5F", "53 52 A4 56"}
-const int numAuthorized = 2;
 
 // ---------- Functions ---------- 
-// getUID() turns the card's UID bytes into text
-
-String uid = ""; 
-  for (byte i = 0; i < rfid.uid.size; i++) {
-    if (rfid.uid.uidByte[i] < 0x10) {
-      uid = uid + "0";
-    }
-   
-   uid = uid + String(rfid.uid.uidByte[i], HEX);
-     if (i < rfid.uid.size - 1) {
-      uid = uid + " ";
-    }
-  }
-
+  
 
 
 
