@@ -8,8 +8,9 @@
 #include <MFRC522.h>
 
 // ---------- Global Variables ----------
-#define RFID_SS ___
-#define RFID_RST ___
+// Shared SPI bus: SCK: GPIO 18, MOSI: GPIO 23, MISO: GPIO 19
+#define RFID_SS 5
+#define RFID_RST 22
 
 #define GREEN_LED ___
 #define RED_LED ___
