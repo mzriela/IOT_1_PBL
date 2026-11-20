@@ -2,15 +2,18 @@
 // By: Jason and Julia 
 
 // ---------- Libraries ----------
-#include <Arduino.h>
-#include <Wire.h>
+ #include <Arduino.h>
+ #include <Wire.h>
+ #include <Adafruit_Sensor.h> 
+ #include <Adafruit_GFX.h> 
+ #include <Adafruit_SSD1306.h> 
 // From Lab 6
 
 
 
 
 // ---------- Global Variables ----------
-// add pins (From Lab6)
+ // add pins (From Lab6)
  #define SCREEN_WIDTH 128 
  #define SCREEN_HEIGHT 64 
  #define OLED_MOSI 11 
@@ -18,12 +21,63 @@
  #define OLED_DC 9 
  #define OLED_CS 10 
  #define OLED_RST 8 
-// ---------- Objects ----------
+ //an array of 10 readings(From LAB11)
+ const int NUM_READING =10
+ int samples[NUM_SAMPLES];
+// ---------- objects ---------- 
+  Adafruit_SSD1306 display( 
 
+  SCREEN_WIDTH, 
+
+  SCREEN_HEIGHT, 
+
+  OLED_MOSI, 
+
+  OLED_CLK, 
+
+  OLED_DC, 
+
+  OLED_RST, 
+
+  OLED_CS 
+ 
 // ---------- Functions ---------- 
-  
+  void OLEDDISPLAY();
 
+void setup();
+  // Clear Display 
 
+display.clearDisplay(); 
+
+// Set Text Size 
+
+display.setTextSize(1); 
+
+// Set Text Color 
+
+display.setTextColor(SSD1306_WHITE); 
+
+// Update Display 
+
+display.display(); 
+void loop();
+display.println("Hello");
+  // Clear Display 
+
+display.clearDisplay(); 
+
+// Set Text Size 
+
+display.setTextSize(1); 
+
+// Set Text Color 
+
+display.setTextColor(SSD1306_WHITE); 
+
+// Update Display 
+
+display.display(); 
+ delay(1000);
 
 
 
