@@ -27,7 +27,7 @@
 // ---------- objects ---------- 
   Adafruit_SSD1306 display( 
 
-  SCREEN_WIDTH, 
+  SCREEN_WIDTH, 
 
   SCREEN_HEIGHT, 
 
