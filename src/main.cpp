@@ -1,13 +1,17 @@
 // IoT PBL - Smart Study Room Station
 // By: Jason and Julia 
 
-// ---------- Libraries ----------
+// ==================================================
+//                    LIBRARIES
+// ==================================================
 #include <Arduino.h>
 // From Lab 9
 #include <SPI.h>
 #include <MFRC522.h>
 
-// ---------- Global Variables ----------
+// ==================================================
+//                  PIN DEFINITIONS
+// ==================================================
 // Shared SPI bus: SCK: GPIO 18, MOSI: GPIO 23, MISO: GPIO 19
 #define RFID_SS 5
 #define RFID_RST 27
@@ -16,17 +20,25 @@
 #define RED_LED 26 // Red LED: flashes when an unknown card is tapped
 
 
-// ---------- Objects ----------
+// ==================================================
+//                     OBJECTS
+// ==================================================
 MFRC522 rfid(RFID_SS, RFID_RST);
 
+// ==================================================
+//                 AUTHORIZED CARDS
+// ==================================================
 // Lists the cards that are allowed (white cards)
-String authorizedUIDs[] = {"D0 68 C8 5F", "53 52 A4 56", "86 A2 F5 05"}; // Add authorized UIDs here
-int numAuthorized = 3;
+String authorizedUIDs[] = {"D0 68 C8 5F", "53 52 A4 56"}; // Add authorized UIDs here
+int numAuthorized = 2;
 
 // Stores the room state. "False" is free & "True" is Occupied
 // Starts as free, but will be set to occupied when the first card is scanned
 bool occupied = false; 
 
+// ==================================================
+//               TIMER AND SCAN VARIABLES
+// ==================================================
 unsigned long indicatorStart = 0;
 unsigned long indicatorTime = 0;
 bool indicatorOn = false;
@@ -37,7 +49,11 @@ unsigned long lastScanTime = 0; // Store the time of the last scan
 String occupiedBy = "";   // UID of the card that checked in
 
 
-// ---------- Functions ---------- 
+// ==================================================
+//                     FUNCTIONS
+// ==================================================
+
+// ---------- Reading the Card ----------
 // getUID() turns the card's UID bytes into text
 String getUID() { 
   String uid = ""; 
@@ -58,6 +74,7 @@ String getUID() {
     return uid;
 }
 
+// ---------- Checking the Card ----------
 // isAuthorized() checks if the card's UID is in the list of authorized UIDs
   bool isAuthorized(String uid) {
     for (int i = 0; i < numAuthorized; i++) { // Compares the scanned UID with every UID in the list
@@ -68,12 +85,14 @@ String getUID() {
     return false; // Checked the whole list with no match, so the card is not authorized
   }
 
+  // ---------- Indicator Timer ----------
   void startIndicatorTimer(unsigned long duration) {
     indicatorStart = millis();
     indicatorTime = duration; 
     indicatorOn = true;
   }
 
+ // ---------- Event: Unknown Card (Denied) ----------
 // Unknown card: flash the red LED (the room state doesn't change)
     void onAccessDenied() 
     { 
@@ -86,6 +105,7 @@ String getUID() {
       }
     }
 
+// ---------- Event: Authorized Card (Granted) ----------
 // Authorized card: toggle the room between Free and Occupied
   void onAccessGranted(String uid) {
     if (occupied == false) {
@@ -109,7 +129,7 @@ String getUID() {
   }
 }
 
-
+// ---------- Event: Timer Expired ----------
 // Timer expired: turn off the red LED only (the green LED shows the room state)
     void onTimerExpired() {
       digitalWrite(RED_LED, LOW);
@@ -117,6 +137,7 @@ String getUID() {
       Serial.println("Ready");
     }
 
+// ---------- Event: Card Scanned ----------
 // Runs every time a card is read: ignores repeats, then checks the list
     void onCardScanned(String uid) {
       // Same card as last time AND less than 2 seconds ago = same tap, so ignored
@@ -141,26 +162,32 @@ String getUID() {
       }
     }
 
+
+// ==================================================
+//                      SETUP
+// ==================================================
 void setup() {
   Serial.begin(115200);
   Serial.println("Program Started");
 
-  // RFID code
+  // ---------- RFID code ----------
   SPI.begin(); // Init SPI bus
   rfid.PCD_Init(); // Init MFRC522
   delay(10); // Show details of PCD - MFRC522 Card Reader details
   rfid.PCD_DumpVersionToSerial();
   Serial.println("Room is FREE. Tap a card...");
 
-  // LED code
+  // ---------- LED code ----------
   pinMode(GREEN_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
 
 }
 
-
+// ==================================================
+//                       LOOP
+// ==================================================
 void loop() {
-  // Card detection
+  // ---------- Card detection ----------
   if (rfid.PICC_IsNewCardPresent() == true && rfid.PICC_ReadCardSerial() == true) {
     String uid = getUID();
     onCardScanned(uid);
