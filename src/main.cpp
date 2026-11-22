@@ -10,7 +10,8 @@
  #include <Adafruit_GFX.h> 
  #include <Adafruit_SSD1306.h> 
  #include <Adafruit_BMP280.h> 
-// From Lab 6
+ // Libraries from Lab 11
+ #include <ArduinoJson.h>
 
 
 
@@ -47,12 +48,25 @@
 
   OLED_CS 
 ); 
-Adafruit_BMP280 BMP; 
+void sendReport(float average, int minimum, int maximum, int level)
+{
+  // A JsonDocument holds JSON data in memory
+  // (Common Commands: "Create a JSON Document").
+  JsonDocument report;
+
+  // Add key : value pairs (Common Commands: "Add a Key and Value").
+  report["device"] = "esp32-lab11";    // text
+  report["average"] = average;         // number with decimals
+  report["min"] = minimum;             // whole number
+  report["max"] = maximum;             // whole number
+  report["level"] = level;             // the key must be called level
+}
+  Adafruit_BMP280 BMP; 
 
 float temperature = 0 ; 
 // Functions
   // Function that collects and stores BMP280's readings into an array. (Max 10 readings)
-  void getTemperature() {
+  void getTemperature(){
    for (int i = 0; i < NUM_READING; i++)
    {
     samples[i] = BMP.readTemperature();
@@ -78,13 +92,15 @@ float getAverage()
   {
     sum = sum + samples[i];          // add element i to the total
   }
-  return (float)sum / NUM_READING;    // (float) keeps the decimals
-}
+  return (float)sum / NUM_READING; // (return) keeps the decimals
+ 
+ }
 void setup() {
- Serial.begin(9600); 
+ Serial.begin(115200); 
  Wire.begin(); 
  BMP.begin(0x77);
  display.begin(SSD1306_SWITCHCAPVCC); 
+
 // Clear Display 
 
 display.clearDisplay(); 
@@ -105,9 +121,11 @@ display.display();
 }
 void loop(){
  float average = getAverage();
-display.println(average);
+ display.print("Avg Temp:");
+ display.print(average);
+  // set location where text appears
+ display.setCursor(0,0);
  // Update the display 
-
  display.display(); 
 
   // Wait one second 
