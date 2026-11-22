@@ -2,28 +2,117 @@
 // By: Jason and Julia 
 
 // ---------- Libraries ----------
+  // Libraries from Lab 6
  #include <Arduino.h>
  #include <Wire.h>
+ #include <SPI.h> 
  #include <Adafruit_Sensor.h> 
  #include <Adafruit_GFX.h> 
  #include <Adafruit_SSD1306.h> 
+ #include <Adafruit_BMP280.h> 
 // From Lab 6
 
 
 
 
 // ---------- Global Variables ----------
- // add pins (From Lab6)
+ // add OLED GPIO pins (From Lab6)
  #define SCREEN_WIDTH 128 
  #define SCREEN_HEIGHT 64 
- #define OLED_MOSI 11 
- #define OLED_CLK 13 
- #define OLED_DC 9 
- #define OLED_CS 10 
- #define OLED_RST 8 
+ #define OLED_DIN 23
+ #define OLED_CLK 18 
+ #define OLED_CS 4
+ #define OLED_DC 16 
+ #define OLED_RES 17 
+ // add BMP280 GPIO pins (From Lab6)
+ #define BMP280_SDA 21
+ #define BMP280_SCL 22
  //an array of 10 readings(From LAB11)
- const int NUM_READING =10
- int samples[NUM_SAMPLES];
-// ---------- objects ---------- 
+ const int NUM_READING = 10;
+ int samples[NUM_READING];
+ // ---------- objects ---------- 
+ Adafruit_SSD1306 display( 
 
+  SCREEN_WIDTH, 
 
+  SCREEN_HEIGHT, 
+
+  OLED_DIN, 
+
+  OLED_CLK, 
+
+  OLED_DC, 
+
+  OLED_RES, 
+
+  OLED_CS 
+); 
+Adafruit_BMP280 BMP; 
+
+float temperature = 0 ; 
+// Functions
+  // Function that collects and stores BMP280's readings into an array. (Max 10 readings)
+  void getTemperature() {
+   for (int i = 0; i < NUM_READING; i++)
+   {
+    samples[i] = BMP.readTemperature();
+    delay(2000);
+   }
+  }
+  // printSamples() – print every element of the array, one per line.
+void printSamples()
+{
+  for (int i = 0; i < NUM_READING; i++)
+  {
+    Serial.print("samples[");
+    Serial.print(i);
+    Serial.print("] = ");
+    Serial.println(samples[i]);
+  }
+}
+// getAverage() – add up every element, then divide by the number of elements.
+float getAverage()
+{
+  long sum = 0;                        // the total starts at 0
+  for (int i = 0; i < NUM_READING; i++)
+  {
+    sum = sum + samples[i];          // add element i to the total
+  }
+  return (float)sum / NUM_READING;    // (float) keeps the decimals
+}
+void setup() {
+ Serial.begin(9600); 
+ Wire.begin(); 
+ BMP.begin(0x77);
+ display.begin(SSD1306_SWITCHCAPVCC); 
+// Clear Display 
+
+display.clearDisplay(); 
+
+// Set Text Size 
+
+display.setTextSize(1); 
+
+// Set Text Color 
+
+display.setTextColor(SSD1306_WHITE); 
+
+// Update Display 
+
+display.display(); 
+
+ 
+}
+void loop(){
+ float average = getAverage();
+display.println(average);
+ // Update the display 
+
+ display.display(); 
+
+  // Wait one second 
+
+ 
+
+  delay(1000); 
+}
