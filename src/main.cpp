@@ -17,7 +17,7 @@
 
 
 // ---------- Global Variables ----------
- // add OLED GPIO pins (From Lab6)
+ // add OLED GPIO pins (From Lab6) - Sensing and Display
  #define SCREEN_WIDTH 128 
  #define SCREEN_HEIGHT 64 
  #define OLED_DIN 23
@@ -25,9 +25,12 @@
  #define OLED_CS 4
  #define OLED_DC 16 
  #define OLED_RES 17 
- // add BMP280 GPIO pins (From Lab6)
+ // add BMP280 GPIO pins (From Lab6) - Sensing and Display
  #define BMP280_SDA 21
  #define BMP280_SCL 22
+ // add Fan-related pin control
+ #define FAN_PIN 33
+ #define POT_PIN 34
  //an array of 10 readings(From LAB11)
  const int NUM_READING = 10;
  int samples[NUM_READING];
@@ -101,6 +104,20 @@ void SetRoomStatus(){
   else{
     display.println("Room Status:Hot");
   }
+}
+// Part VII – PWM: LED brightness follows the potentiometer(From L12)
+void partPWM()
+{
+  int potValue = analogRead(POT_PIN);
+
+// Brightness follows the pot (Common Commands: "Scale a Value")
+int duty = map(potValue, 0, 4095, 0, 255);     // 0 – 4095 → 0 – 255
+ledcWrite(LED_CH, duty);                        // set the LED duty
+
+Serial.print("duty = ");  Serial.print(duty);
+Serial.print("   duty cycle = ");  Serial.print(duty * 100 / 255);  Serial.println(" %");
+delay(100);
+
 }
 void setup() {
  Serial.begin(115200); 
