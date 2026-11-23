@@ -48,18 +48,15 @@
 
   OLED_CS 
 ); 
-void sendReport(float average, int minimum, int maximum, int level)
+void sendReport(float average,int level)
 {
   // A JsonDocument holds JSON data in memory
   // (Common Commands: "Create a JSON Document").
   JsonDocument report;
 
   // Add key : value pairs (Common Commands: "Add a Key and Value").
-  report["device"] = "esp32-lab11";    // text
+  report["device"] = "";    // text
   report["average"] = average;         // number with decimals
-  report["min"] = minimum;             // whole number
-  report["max"] = maximum;             // whole number
-  report["level"] = level;             // the key must be called level
 }
   Adafruit_BMP280 BMP; 
 
@@ -70,7 +67,7 @@ float temperature = 0 ;
    for (int i = 0; i < NUM_READING; i++)
    {
     samples[i] = BMP.readTemperature();
-    delay(2000);
+    delay(500);
    }
   }
   // printSamples() – print every element of the array, one per line.
@@ -95,6 +92,16 @@ float getAverage()
   return (float)sum / NUM_READING; // (return) keeps the decimals
  
  }
+void SetRoomStatus(){
+
+  float average = getAverage();
+  if(average < 20){
+    display.println("Room Status: Cold");
+  }
+  else{
+    display.println("Room Status:Hot");
+  }
+}
 void setup() {
  Serial.begin(115200); 
  Wire.begin(); 
@@ -107,7 +114,7 @@ display.clearDisplay();
 
 // Set Text Size 
 
-display.setTextSize(1); 
+display.setTextSize(2);
 
 // Set Text Color 
 
@@ -120,17 +127,24 @@ display.display();
  
 }
 void loop(){
+  getTemperature();
  float average = getAverage();
- display.print("Avg Temp:");
+ // Set the average temp on the OLED
+ display.println("Avg Temp:");
  display.print(average);
+ display.print("C"); 
+ // Set room status on OLED
+ SetRoomStatus();
+ //temporary
+ printSamples();
+
+ 
+
   // set location where text appears
  display.setCursor(0,0);
  // Update the display 
  display.display(); 
 
   // Wait one second 
-
- 
-
   delay(1000); 
 }
