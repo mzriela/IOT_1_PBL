@@ -12,9 +12,7 @@
 #include <Adafruit_BMP280.h> 
  // Libraries from Lab 11
 #include <ArduinoJson.h>
-
- 
-
+#include <Fan.h>
 // ---------- Pin Numbers ----------
  // add OLED Display Settings (From Lab6) - Sensing and Display
  #define SCREEN_WIDTH 128 
@@ -124,7 +122,7 @@ Serial.print("   duty cycle = ");  Serial.print(duty * 100 / 255);  Serial.print
 delay(100);
 
 }
-void FAN_State
+
 void setup() {
  Serial.begin(115200); 
  Wire.begin(); 
@@ -135,8 +133,7 @@ void setup() {
   analogReadResolution(12);  
   analogSetAttenuation(ADC_11db);  
     // PWM settings
-  ledcSetup(FAN_CH, PWM_FREQ, PWM_RES);    // channel, frequency, resolution
-  ledcAttachPin(FAN_PIN, FAN_CH);          // connect the LED pin to its channel
+
 
 // Clear Display 
 
