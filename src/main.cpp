@@ -99,7 +99,7 @@ String getUID() {
   void logEvent(String event, String uid) {
   unsigned long currentTime = millis() / 1000; // Get the current time in seconds
 
-  dataFile = SD.open("log.csv", FILE_WRITE); // Open the file for writing
+  dataFile = SD.open("/log.csv", FILE_APPEND); // Open the file for writing
   if (dataFile) {
     dataFile.print(currentTime);
     dataFile.print(",");
@@ -224,6 +224,9 @@ void setup() {
   pinMode(RFID_SS, OUTPUT);
   pinMode(SD_CS, OUTPUT);
   pinMode(OLED_CS, OUTPUT);
+  digitalWrite(RFID_SS, HIGH); // Deselect RFID
+  digitalWrite(SD_CS, HIGH); // Deselect SD card
+  digitalWrite(OLED_CS, HIGH); // Deselect OLED
 
   Serial.println("Initializing SD Card...");
   if (SD.begin(SD_CS)) {
