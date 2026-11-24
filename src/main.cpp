@@ -8,7 +8,7 @@
 // From Lab 9
 #include <SPI.h>
 #include <MFRC522.h>
-// From Lab 6
+// From Lab 5
 #include <SD.h>
 
 // ==================================================
@@ -37,8 +37,8 @@ File dataFile; // File object for SD card
 //                 AUTHORIZED CARDS
 // ==================================================
 // Lists the cards that are allowed (white cards)
-String authorizedUIDs[] = {"D0 68 C8 5F", "53 52 A4 56"}; // Add authorized UIDs here
-int numAuthorized = 2;
+String authorizedUIDs[] = {"D0 68 C8 5F", "53 52 A4 56", "86 A2 F5 05"}; // Add authorized UIDs here
+int numAuthorized = 3;
 
 // Stores the room state. "False" is free & "True" is Occupied
 // Starts as free, but will be set to occupied when the first card is scanned
@@ -93,7 +93,33 @@ String getUID() {
     return false; // Checked the whole list with no match, so the card is not authorized
   }
 
-  // ---------- Indicator Timer ----------
+  // ---------- Logging the Event ----------
+  // ---------- SD Card Functions ----------
+  // ---------- Write one event to the CSV file ----------
+  void logEvent(String event, String uid) {
+  unsigned long currentTime = millis() / 1000; // Get the current time in seconds
+
+  dataFile = SD.open("log.csv", FILE_WRITE); // Open the file for writing
+  if (dataFile) {
+    dataFile.print(currentTime);
+    dataFile.print(",");
+    dataFile.print(event);
+    dataFile.print(",");
+    dataFile.println(uid);
+    dataFile.close(); // Close the file
+  } else {
+    Serial.println("Error opening log.csv");
+  }
+
+  Serial.print(currentTime);
+  Serial.print(" s, ");
+  Serial.print(event);
+  Serial.print(", ");
+  Serial.println(uid);
+
+}
+
+// ---------- Indicator Timer ----------
   void startIndicatorTimer(unsigned long duration) {
     indicatorStart = millis();
     indicatorTime = duration; 
@@ -122,6 +148,7 @@ String getUID() {
     occupiedBy = uid; // Remember which card checked in
     digitalWrite(GREEN_LED, HIGH);
     Serial.println("Room is now Occupied");
+    logEvent("Check-in", uid); // Log the check-in event (SD CARD CODE)
   }
   else if (uid == occupiedBy) {
     // Same card that checked in: check out
@@ -129,6 +156,7 @@ String getUID() {
     occupiedBy = "";
     digitalWrite(GREEN_LED, LOW);
     Serial.println("Room is now Free");
+    logEvent("Check-out", uid); // Log the check-out event (SD CARD CODE)
   }
   else {
     // A different authorized card: room is in use, so refuse it
@@ -170,29 +198,7 @@ String getUID() {
       }
     }
 
-// ---------- SD Card Functions ----------
-// ---------- Write one event to the CSV file ----------
-void logEvent(String event, String uid) {
-  unsigned long currentTime = millis() / 1000; // Get the current time in seconds
 
-  dataFile = SD.open("log.csv", FILE_WRITE); // Open the file for writing
-  if (dataFile) {
-    dataFile.print(currentTime);
-    dataFile.print(",");
-    dataFile.print(event);
-    dataFile.print(",");
-    dataFile.println(uid);
-    dataFile.close(); // Close the file
-  } else {
-    Serial.println("Error opening log.csv");
-  }
-
-  Serial.print(currentTime);
-  Serial.print(" s, ");
-  Serial.print(event);
-  Serial.print(", ");
-  Serial.println(uid);
-}
 
 
 // ==================================================
@@ -212,10 +218,12 @@ void setup() {
   // ---------- LED code ----------
   pinMode(GREEN_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
+ 
 
   // ---------- SD card code ----------
   pinMode(RFID_SS, OUTPUT);
   pinMode(SD_CS, OUTPUT);
+  pinMode(OLED_CS, OUTPUT);
 
   Serial.println("Initializing SD Card...");
   if (SD.begin(SD_CS)) {
@@ -225,6 +233,16 @@ void setup() {
     Serial.println("SD Card Not Found");
   }
 
+  if (!SD.exists("/log.csv")) {
+    dataFile = SD.open("/log.csv", FILE_WRITE);
+    if (dataFile) {
+      dataFile.println("Time,Event,UID");
+      dataFile.close();
+    }
+    else {
+      Serial.println("Error creating log.csv");
+    }
+  }
 }
 
 // ==================================================
@@ -238,6 +256,5 @@ void loop() {
     rfid.PICC_HaltA(); // Stop reading (puts the card to sleep so it is not read again and again)
   }
 }
-
 
 
