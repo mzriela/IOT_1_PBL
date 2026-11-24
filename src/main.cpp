@@ -8,6 +8,8 @@
 // From Lab 9
 #include <SPI.h>
 #include <MFRC522.h>
+// From Lab 6
+#include <SD.h>
 
 // ==================================================
 //                  PIN DEFINITIONS
@@ -20,10 +22,16 @@
 #define RED_LED 26 // Red LED: flashes when an unknown card is tapped
 
 
+#define SD_CS 13
+#define OLED_CS 4
+
+
 // ==================================================
 //                     OBJECTS
 // ==================================================
 MFRC522 rfid(RFID_SS, RFID_RST);
+
+File dataFile; // File object for SD card
 
 // ==================================================
 //                 AUTHORIZED CARDS
@@ -162,6 +170,30 @@ String getUID() {
       }
     }
 
+// ---------- SD Card Functions ----------
+// ---------- Write one event to the CSV file ----------
+void logEvent(String event, String uid) {
+  unsigned long currentTime = millis() / 1000; // Get the current time in seconds
+
+  dataFile = SD.open("log.csv", FILE_WRITE); // Open the file for writing
+  if (dataFile) {
+    dataFile.print(currentTime);
+    dataFile.print(",");
+    dataFile.print(event);
+    dataFile.print(",");
+    dataFile.println(uid);
+    dataFile.close(); // Close the file
+  } else {
+    Serial.println("Error opening log.csv");
+  }
+
+  Serial.print(currentTime);
+  Serial.print(" s, ");
+  Serial.print(event);
+  Serial.print(", ");
+  Serial.println(uid);
+}
+
 
 // ==================================================
 //                      SETUP
@@ -180,6 +212,18 @@ void setup() {
   // ---------- LED code ----------
   pinMode(GREEN_LED, OUTPUT);
   pinMode(RED_LED, OUTPUT);
+
+  // ---------- SD card code ----------
+  pinMode(RFID_SS, OUTPUT);
+  pinMode(SD_CS, OUTPUT);
+
+  Serial.println("Initializing SD Card...");
+  if (SD.begin(SD_CS)) {
+    Serial.println("SD Card Found");
+  }
+  else {
+    Serial.println("SD Card Not Found");
+  }
 
 }
 
