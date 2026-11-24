@@ -13,10 +13,13 @@
  // Libraries from Lab 11
  #include <ArduinoJson.h>
 
+ #include <Fan.h>
+
+ 
 
 
 
-// ---------- Global Variables ----------
+// ---------- Pin Numbers ----------
  // add OLED GPIO pins (From Lab6) - Sensing and Display
  #define SCREEN_WIDTH 128 
  #define SCREEN_HEIGHT 64 
@@ -31,10 +34,15 @@
  // add Fan-related pin control
  #define FAN_PIN 33
  #define POT_PIN 34
+
  //an array of 10 readings(From LAB11)
  const int NUM_READING = 10;
  int samples[NUM_READING];
- // ---------- objects ---------- 
+ #define FAN_CH    0            // PWM channel for the LED
+ const int ADC_BITS = 12;
+ const int PWM_FREQ = 5000;     // PWM frequency (Hz)
+ const int PWM_RES = 8;         // 8 bits: duty 0 – 255
+ // ---------- Global Variables ---------- 
  Adafruit_SSD1306 display( 
 
   SCREEN_WIDTH, 
@@ -112,7 +120,7 @@ void partPWM()
 
 // Brightness follows the pot (Common Commands: "Scale a Value")
 int duty = map(potValue, 0, 4095, 0, 255);     // 0 – 4095 → 0 – 255
-ledcWrite(LED_CH, duty);                        // set the LED duty
+ledcWrite(FAN_CH, duty);                        // set the LED duty
 
 Serial.print("duty = ");  Serial.print(duty);
 Serial.print("   duty cycle = ");  Serial.print(duty * 100 / 255);  Serial.println(" %");
@@ -124,6 +132,13 @@ void setup() {
  Wire.begin(); 
  BMP.begin(0x77);
  display.begin(SSD1306_SWITCHCAPVCC); 
+ digitalWrite(33,OUTPUT);
+ //
+  analogReadResolution(12);  
+  analogSetAttenuation(ADC_11db);  
+    // PWM settings
+  ledcSetup(FAN_CH, PWM_FREQ, PWM_RES);    // channel, frequency, resolution
+  ledcAttachPin(FAN_PIN, FAN_CH);          // connect the LED pin to its channel
 
 // Clear Display 
 
@@ -154,7 +169,7 @@ void loop(){
  SetRoomStatus();
  //temporary
  printSamples();
-
+ partPWM();
  
 
   // set location where text appears
