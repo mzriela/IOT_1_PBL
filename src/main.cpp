@@ -13,7 +13,7 @@
  // Libraries from Lab 11
  #include <ArduinoJson.h>
 
- #include <Fan.h>
+ 
 
  
 
@@ -40,7 +40,7 @@
  int samples[NUM_READING];
  #define FAN_CH    0            // PWM channel for the LED
  const int ADC_BITS = 12;
- const int PWM_FREQ = 5000;     // PWM frequency (Hz)
+ const int PWM_FREQ = 25000;     // PWM frequency (Hz)
  const int PWM_RES = 8;         // 8 bits: duty 0 – 255
  // ---------- Global Variables ---------- 
  Adafruit_SSD1306 display( 
@@ -118,27 +118,42 @@ void partPWM()
 {
   int potValue = analogRead(POT_PIN);
 
-// Brightness follows the pot (Common Commands: "Scale a Value")
-int duty = map(potValue, 0, 4095, 0, 255);     // 0 – 4095 → 0 – 255
-ledcWrite(FAN_CH, duty);                        // set the LED duty
+ // Brightness follows the pot (Common Commands: "Scale a Value")
+ int duty = map(potValue, 0, 4095, 0, 255);     // 0 – 4095 → 0 – 255
+ ledcWrite(FAN_PIN, duty);                        // set the LED duty
 
-Serial.print("duty = ");  Serial.print(duty);
-Serial.print("   duty cycle = ");  Serial.print(duty * 100 / 255);  Serial.println(" %");
-delay(100);
+ Serial.print("duty = ");  Serial.print(duty);
+ Serial.print("   duty cycle = ");  Serial.print(duty * 100 / 255);  Serial.println(" %");
+ 
 
+    // Calculate and display percentage
+  int speedPercent = map( duty, 0, 255, 0, 100);
+ 
+  Serial.print("Potentiometer: ");
+  Serial.print(analogRead(POT_PIN));
+  Serial.print(" | PWM Value: ");
+  Serial.print(duty);
+  Serial.print(" | Fan Speed: ");
+  Serial.print(speedPercent);
+  Serial.println("%");
+  delay(100);
 }
 void setup() {
  Serial.begin(115200); 
+ //Start the BMP280 and SPI comm
  Wire.begin(); 
  BMP.begin(0x77);
  display.begin(SSD1306_SWITCHCAPVCC); 
- digitalWrite(33,OUTPUT);
+ pinMode(33,OUTPUT);
  //
   analogReadResolution(12);  
   analogSetAttenuation(ADC_11db);  
-    // PWM settings
-  ledcSetup(FAN_CH, PWM_FREQ, PWM_RES);    // channel, frequency, resolution
-  ledcAttachPin(FAN_PIN, FAN_CH);          // connect the LED pin to its channel
+    
+  // PWM settings
+  ledcAttach(FAN_PIN, PWM_FREQ, PWM_RES);    // channel, frequency, resolution
+    // Set initial fan speed to zero
+  ledcWrite(FAN_PIN, 0);
+
 
 // Clear Display 
 
@@ -169,14 +184,13 @@ void loop(){
  SetRoomStatus();
  //temporary
  printSamples();
- partPWM();
- 
+ //partPWM();
 
   // set location where text appears
  display.setCursor(0,0);
  // Update the display 
  display.display(); 
-
+ 
   // Wait one second 
   delay(1000); 
 }
