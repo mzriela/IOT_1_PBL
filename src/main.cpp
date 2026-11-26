@@ -3,13 +3,13 @@
 
 // ---------- Libraries ----------
   // Libraries from Lab 6
- #include <Arduino.h>
- #include <Wire.h>
- #include <SPI.h> 
- #include <Adafruit_Sensor.h> 
- #include <Adafruit_GFX.h> 
- #include <Adafruit_SSD1306.h> 
- #include <Adafruit_BMP280.h> 
+#include <Arduino.h>
+#include <Wire.h>
+#include <SPI.h> 
+#include <Adafruit_Sensor.h> 
+#include <Adafruit_GFX.h> 
+#include <Adafruit_SSD1306.h> 
+#include <Adafruit_BMP280.h> 
  // Libraries from Lab 11
  #include <ArduinoJson.h>
 
@@ -20,9 +20,10 @@
 
 
 // ---------- Pin Numbers ----------
- // add OLED GPIO pins (From Lab6) - Sensing and Display
+ // add OLED Display Settings (From Lab6) - Sensing and Display
  #define SCREEN_WIDTH 128 
  #define SCREEN_HEIGHT 64 
+ // add OLED GPIO pins (From Lab6) - Sensing and Display
  #define OLED_DIN 23
  #define OLED_CLK 18 
  #define OLED_CS 4
@@ -127,17 +128,9 @@ void partPWM()
  
 
     // Calculate and display percentage
-  int speedPercent = map( duty, 0, 255, 0, 100);
- 
-  Serial.print("Potentiometer: ");
-  Serial.print(analogRead(POT_PIN));
-  Serial.print(" | PWM Value: ");
-  Serial.print(duty);
-  Serial.print(" | Fan Speed: ");
-  Serial.print(speedPercent);
-  Serial.println("%");
-  delay(100);
+
 }
+
 void setup() {
  Serial.begin(115200); 
  //Start the BMP280 and SPI comm
