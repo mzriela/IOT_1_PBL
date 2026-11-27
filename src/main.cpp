@@ -25,18 +25,22 @@
  // add BMP280 GPIO pins (From Lab6) - Sensing and Display
  #define BMP280_SDA 21
  #define BMP280_SCL 22
- // add Fan-related pin control
- #define LED_PIN 2
- #define POT_PIN 34
-
- //an array of 10 readings(From LAB11)
+ //an array of 10 readings(From LAB11) - Sensing and Display
  const int NUM_READING = 10;
  int samples[NUM_READING];
 
- // LED_State_configuretions(From LAB12)
+ // add Fan-related pin control - Fan Control
+ #define POT_PIN 34
+ #define LED_PIN 2
+ // LED_State_configuretions(From LAB12) - Fan Control
  const int ADC_BITS = 12;
  const int PWM_FREQ = 5000;     // PWM frequency (Hz)
  const int PWM_RES = 8;         // 8 bits: duty 0 – 255
+
+ //UART-related GPIO Pins - Events and Status Byte Lab 2 and 3
+ #define TX 1
+ #define RX 3
+
 // ---------- Global Variables ---------- 
  Adafruit_SSD1306 display( 
   SCREEN_WIDTH, 
@@ -46,21 +50,23 @@
   OLED_DC, 
   OLED_RES, 
   OLED_CS 
-  ); 
+  );
+  float Text_Size = 2;
+  //
+  Adafruit_BMP280 BMP;
   float temperature = 0; 
-  float average = getAverage();
+  // 8-bit Status byte
+  uint8_t value;
 // Functions
- void sendReport(float average,int level)
+ void sendReport(float average,int level, int array)
  {
   // A JsonDocument holds JSON data in memory
   JsonDocument report;
   // Add key : value pairs (Common Commands: "Add a Key and Value").
   report["device"] = "";    // text
-  report["average"] = average;         // number with decimals
+  report["average"] = average;   // number with decimals
+  report["status"] = array;
  }
-  
-  Adafruit_BMP280 BMP; 
- 
   // Function that collects and stores BMP280's readings into an array. (Max 10 readings)
   void getTemperature(){
    for (int i = 0; i < NUM_READING; i++)
@@ -89,17 +95,23 @@
     sum = sum + samples[i];          // add element i to the total
   }
   return (float)sum / NUM_READING; // (return) keeps the decimals
- 
+  
  }
- // SetRoomStatus() - Set the room status on the OLED based on the average temperature
+ // SetRoomStatus() - Set the room status on the OLED based on the average temperature and the average temperature
  void SetRoomStatus(){
 
   float average = getAverage();
+  // Set the average temp on the OLED
+  display.setCursor(0,0);
+   display.println("Avg Temp:");
+   display.print(average);
+   display.print("C"); 
+  // if conditions
   if(average < 20){
-    display.println("Room Status: Cold");
+   display.println("    RoomStatus: Cold");
   }
   else{
-    display.println("Room Status:Hot");
+   display.println("    RoomStatus: Hot");
   }
  }
  // partPWM() - convert potieminometer value into duty value for the LED
@@ -107,12 +119,26 @@
  {
   int potValue = analogRead(POT_PIN);
  // Brightness follows the pot (Common Commands: "Scale a Value")
+ // "Room is occupied"
  int duty = map(potValue, 0, 4095, 0, 255);     // 0 – 4095 → 0 – 255
- ledcWrite(LED_PIN, duty);                        // set the LED duty
-
- Serial.print("duty = ");  Serial.print(duty);
+ if(potValue<1024){
+ ledcWrite(LED_PIN, 64);  // set the LED duty-Led level 1
+ }
+  else if(potValue<2048 && potValue>1025){
+ ledcWrite(LED_PIN, 128); // set the LED duty-Led level 2
+ }
+ else{ 
+ ledcWrite(LED_PIN, 255); // set the LED duty-Led level 3
+ }
+ Serial.print("duty = ");  Serial.print(potValue);
  Serial.print("   duty cycle = ");  Serial.print(duty * 100 / 255);  Serial.println(" %");
  delay(100);
+ }
+ void StatusByte(){
+  byte value = 0;
+
+  value |= 
+
  }
 
 void setup() {
@@ -130,7 +156,7 @@ void setup() {
  // Clear Display 
  display.clearDisplay(); 
  // Set Text Size 
- display.setTextSize(2);
+ display.setTextSize(Text_Size);
  // Set Text Color 
  display.setTextColor(SSD1306_WHITE); 
  // Update Display 
@@ -138,21 +164,16 @@ void setup() {
  }
 void loop(){
   getTemperature();
- 
- // Set the average temp on the OLED
- display.println("Avg Temp:");
- display.print(average);
- display.print("C"); 
+  float average = getAverage();
  // Set room status on OLED
  SetRoomStatus();
  //temporary
  printSamples();
  //partPWM();
  partPWM();
-  // set location where text appears
- display.setCursor(0,0);
+
  // Update the display 
- display.display(); 
- //delay
- delay(1000);
+ display.display();
+ Serial.println(average); 
+
 }
